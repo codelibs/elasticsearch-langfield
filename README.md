@@ -3,7 +3,7 @@ Elasticsearch LangField Plugin
 
 ## Overview
 
-LangField Plugin provides a useful feature for multi-langage.
+LangField Plugin provides a useful feature for multi-language enrivonment.
 
 ## Version
 
