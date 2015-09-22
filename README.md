@@ -114,6 +114,8 @@ Check the result with exists filter query:
       }
     }
 
+Next, check if message_ja field exists:
+
     $ curl -XPOST "http://localhost:9200/my_index/my_type/_search" -d'
     {
       "query": {
