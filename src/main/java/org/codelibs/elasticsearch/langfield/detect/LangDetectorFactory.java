@@ -20,11 +20,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * This class manages an initialization and constructions of {@link LangDetector}.
  *
  * Before using language detection library,
- * load profiles with {@link LangDetectorFactory#loadProfile(String)} method
+ * load profiles with {@link LangDetectorFactory#create(String[])} method
  * and set initialization parameters.
  *
  * When the language detection,
- * construct LangDetector instance via {@link LangDetectorFactory#create()}.
+ * construct LangDetector instance via {@link LangDetectorFactory#getLangDetector()}.
  * See also {@link LangDetector}'s sample code.
  *
  * <ul>

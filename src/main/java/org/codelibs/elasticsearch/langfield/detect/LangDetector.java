@@ -5,7 +5,6 @@ import java.io.Reader;
 import java.lang.Character.UnicodeBlock;
 import java.util.ArrayList;
 import java.util.Formatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -23,7 +22,7 @@ import org.codelibs.elasticsearch.langfield.detect.util.NGram;
  * {@link #getProbabilities()} methods returns a list of multiple languages and their probabilities.
  * <p>
  * The detector has some parameters for language detection.
- * See {@link #setAlpha(double)}, {@link #setMaxTextLength(int)} and {@link #setPriorMap(HashMap)}.
+ * See {@link #setAlpha(double)}, {@link #setMaxTextLength(int)} and {@link #setPriorMap(Map)}.
  *
  * <pre>
  * import java.util.ArrayList;
@@ -99,7 +98,7 @@ public class LangDetector {
 
     /**
      * Constructor.
-     * LangDetector instance can be constructed via {@link LangDetectorFactory#create()}.
+     * LangDetector instance can be constructed via {@link LangDetectorFactory#getLangDetector()}.
      * @param factory {@link LangDetectorFactory} instance (only LangDetectorFactory inside)
      */
     public LangDetector(final LangDetectorFactory factory) {
@@ -158,8 +157,8 @@ public class LangDetector {
      * The default value is 10000(10KB).
      * @param maxTextLength the maxTextLength to set
      */
-    public void setMaxTextLength(final int max_text_length) {
-        this.maxTextLength = max_text_length;
+    public void setMaxTextLength(final int maxTextLength) {
+        this.maxTextLength = maxTextLength;
     }
 
     /**
@@ -411,7 +410,7 @@ public class LangDetector {
     /**
      * unicode encoding (for verbose mode)
      * @param word
-     * @return
+     * @return encoded word
      */
     static private String unicodeEncode(final String word) {
         final StringBuffer buf = new StringBuffer();
