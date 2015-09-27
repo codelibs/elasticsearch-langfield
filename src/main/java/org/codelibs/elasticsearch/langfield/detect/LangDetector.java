@@ -39,7 +39,7 @@ import org.codelibs.elasticsearch.langfield.detect.util.NGram;
  *         detector.append(text);
  *         return detector.detect();
  *     }
- *     public List<Language> detectLangs(String text)  {
+ *     public List&lt;Language&gt; detectLangs(String text)  {
  *         LangDetector detector = LangDetectorFactory.create();
  *         detector.append(text);
  *         return detector.getProbabilities();

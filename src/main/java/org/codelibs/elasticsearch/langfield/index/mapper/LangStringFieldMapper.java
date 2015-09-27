@@ -494,6 +494,10 @@ public class LangStringFieldMapper extends AbstractFieldMapper<String>
 
     /**
      * Creates an copy of the current field with given field name and boost
+     * 
+     * @param field field name
+     * @param context parsed content
+     * @throws IOException content parsing error
      */
     public void parseLangCopyField(final String field, ParseContext context)
             throws IOException {

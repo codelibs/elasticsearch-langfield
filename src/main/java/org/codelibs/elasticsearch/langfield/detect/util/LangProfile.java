@@ -41,7 +41,7 @@ public class LangProfile {
 
     /**
      * Add n-gram to profile
-     * @param gram
+     * @param gram n-gram string
      */
     public void add(final String gram) {
         if (name == null || gram == null) {

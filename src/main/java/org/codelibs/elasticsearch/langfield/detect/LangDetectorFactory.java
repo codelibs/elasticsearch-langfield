@@ -52,6 +52,7 @@ public class LangDetectorFactory {
      * This method must be called once before language detection.
      *
      * @param profileDirectory profile directory path
+     * @return LangDetectorFactory
      */
     public static LangDetectorFactory create(final File profileDirectory) {
         final LangDetectorFactory factory = new LangDetectorFactory();
