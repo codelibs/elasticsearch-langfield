@@ -517,9 +517,9 @@ public class LangStringFieldMapper extends FieldMapper
         if (includeDefaults || !fieldSeparator.equals(FIELD_SEPARATOR)) {
             builder.field(SEPARATOR_SETTING_KEY, fieldSeparator);
         }
-        String langs = String.join(",", supportedLanguages);
+        String langs = Strings.arrayToDelimitedString(supportedLanguages, ",");
         if (includeDefaults
-                || !langs.equals(String.join(",", SUPPORTED_LANGUAGES))) {
+                || !langs.equals(Strings.arrayToDelimitedString(SUPPORTED_LANGUAGES, ","))) {
             builder.field(LANG_SETTING_KEY, langs);
         }
     }
