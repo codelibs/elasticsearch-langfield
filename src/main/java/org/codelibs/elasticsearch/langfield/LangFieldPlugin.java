@@ -1,28 +1,29 @@
 package org.codelibs.elasticsearch.langfield;
 
-import static org.elasticsearch.common.collect.Lists.newArrayList;
-
 import java.util.Collection;
 
 import org.codelibs.elasticsearch.langfield.module.LangFieldIndexModule;
 import org.elasticsearch.common.inject.Module;
-import org.elasticsearch.plugins.AbstractPlugin;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.plugins.Plugin;
 
-public class LangFieldPlugin extends AbstractPlugin {
+import com.google.common.collect.Lists;
+
+public class LangFieldPlugin extends Plugin {
     @Override
     public String name() {
-        return "LangFieldPlugin";
+        return "langfield";
     }
 
     @Override
     public String description() {
-        return "This plugin provides \"langfield\" type.";
+        return "This plugin provides langfield type.";
     }
 
     @Override
-    public Collection<Class<? extends Module>> indexModules() {
-        final Collection<Class<? extends Module>> modules = newArrayList();
-        modules.add(LangFieldIndexModule.class);
+    public Collection<Module> indexModules(Settings indexSettings) {
+        final Collection<Module> modules = Lists.newArrayList();
+        modules.add(new LangFieldIndexModule());
         return modules;
     }
 }

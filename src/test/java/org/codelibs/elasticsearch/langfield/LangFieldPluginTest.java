@@ -6,10 +6,9 @@ import org.codelibs.elasticsearch.runner.ElasticsearchClusterRunner;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.settings.ImmutableSettings.Builder;
+import org.elasticsearch.common.settings.Settings.Builder;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHits;
 
@@ -19,8 +18,11 @@ public class LangFieldPluginTest extends TestCase {
 
     private ElasticsearchClusterRunner runner;
 
+    private String clusterName;
+
     @Override
     protected void setUp() throws Exception {
+        clusterName = "es-configsync-" + System.currentTimeMillis();
         // create runner instance
         runner = new ElasticsearchClusterRunner();
         // create ES nodes
@@ -28,8 +30,15 @@ public class LangFieldPluginTest extends TestCase {
             @Override
             public void build(final int number, final Builder settingsBuilder) {
                 settingsBuilder.put("http.cors.enabled", true);
+                settingsBuilder.put("index.number_of_replicas", 0);
+                settingsBuilder.put("index.number_of_shards", 3);
+                settingsBuilder.put("http.cors.allow-origin", "*");
+                settingsBuilder.putArray("discovery.zen.ping.unicast.hosts",
+                        "localhost:9301-9399");
+                settingsBuilder.put("plugin.types",
+                        "org.codelibs.elasticsearch.langfield.LangFieldPlugin");
             }
-        }).build(newConfigs().ramIndexStore().numOfNode(1));
+        }).build(newConfigs().clusterName(clusterName).numOfNode(1));
 
         // wait for yellow status
         runner.ensureYellow();
@@ -59,18 +68,18 @@ public class LangFieldPluginTest extends TestCase {
                     .startObject(type)//
                     .startObject("properties")//
 
-            // id
+                    // id
                     .startObject("id")//
                     .field("type", "string")//
                     .field("index", "not_analyzed")//
                     .endObject()//
 
-            // message
+                    // message
                     .startObject("message")//
                     .field("type", "langstring")//
                     .endObject()//
 
-            .endObject()//
+                    .endObject()//
                     .endObject()//
                     .endObject();
             runner.createMapping(index, type, mappingBuilder);
@@ -84,7 +93,7 @@ public class LangFieldPluginTest extends TestCase {
             String id = "en";
             String message = "This is a pen.";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
-                    "{\"id\":\"" + id + "\",\"message\":\"" + message + "\"}");
+                    "{\"id\":\"" + id + "\",\"message\":\"" + message + "\",\"test\":\"" + message + "\"}");
             assertTrue(indexResponse1.isCreated());
         }
         {
@@ -129,56 +138,48 @@ public class LangFieldPluginTest extends TestCase {
 
         {
             SearchResponse response = client.prepareSearch(index).setTypes(type)
-                    .setQuery(QueryBuilders.filteredQuery(
-                            QueryBuilders.matchAllQuery(),
-                            FilterBuilders.existsFilter("message_en")))
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.existsQuery("message_en")))
                     .execute().actionGet();
             SearchHits searchHits = response.getHits();
             assertEquals(1, searchHits.getTotalHits());
         }
         {
             SearchResponse response = client.prepareSearch(index).setTypes(type)
-                    .setQuery(QueryBuilders.filteredQuery(
-                            QueryBuilders.matchAllQuery(),
-                            FilterBuilders.existsFilter("message_fr")))
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.existsQuery("message_fr")))
                     .execute().actionGet();
             SearchHits searchHits = response.getHits();
             assertEquals(1, searchHits.getTotalHits());
         }
         {
             SearchResponse response = client.prepareSearch(index).setTypes(type)
-                    .setQuery(QueryBuilders.filteredQuery(
-                            QueryBuilders.matchAllQuery(),
-                            FilterBuilders.existsFilter("message_ja")))
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.existsQuery("message_ja")))
                     .execute().actionGet();
             SearchHits searchHits = response.getHits();
             assertEquals(1, searchHits.getTotalHits());
         }
         {
             SearchResponse response = client.prepareSearch(index).setTypes(type)
-                    .setQuery(QueryBuilders.filteredQuery(
-                            QueryBuilders.matchAllQuery(),
-                            FilterBuilders.existsFilter("message_ko")))
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.existsQuery("message_ko")))
                     .execute().actionGet();
             SearchHits searchHits = response.getHits();
             assertEquals(1, searchHits.getTotalHits());
         }
         {
             SearchResponse response = client.prepareSearch(index).setTypes(type)
-                    .setQuery(QueryBuilders
-                            .filteredQuery(QueryBuilders.matchAllQuery(),
-                                    FilterBuilders
-                                            .existsFilter("message_zh-cn")))
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.existsQuery("message_zh-cn")))
                     .execute().actionGet();
             SearchHits searchHits = response.getHits();
             assertEquals(1, searchHits.getTotalHits());
         }
         {
             SearchResponse response = client.prepareSearch(index).setTypes(type)
-                    .setQuery(QueryBuilders
-                            .filteredQuery(QueryBuilders.matchAllQuery(),
-                                    FilterBuilders
-                                            .existsFilter("message_zh-tw")))
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.existsQuery("message_zh-tw")))
                     .execute().actionGet();
             SearchHits searchHits = response.getHits();
             assertEquals(1, searchHits.getTotalHits());
