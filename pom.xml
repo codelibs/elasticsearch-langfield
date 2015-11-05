@@ -29,10 +29,10 @@
 	</parent>
 	<properties>
 		<elasticsearch.version>2.0.0</elasticsearch.version>
-		<elasticsearch.plugin.classname>org.codelibs.elasticsearch.synonym.SynonymPlugin</elasticsearch.plugin.classname>
+		<elasticsearch.plugin.classname>org.codelibs.elasticsearch.langfield.LangFieldPlugin</elasticsearch.plugin.classname>
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
-		<lucene.version>4.10.4</lucene.version>
+		<lucene.version>5.2.1</lucene.version>
 		<jackson.version>2.5.3</jackson.version>
 	</properties>
 	<build>

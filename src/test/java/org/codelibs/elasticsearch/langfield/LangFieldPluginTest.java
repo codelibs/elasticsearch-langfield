@@ -22,7 +22,7 @@ public class LangFieldPluginTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        clusterName = "es-configsync-" + System.currentTimeMillis();
+        clusterName = "es-langfield-" + System.currentTimeMillis();
         // create runner instance
         runner = new ElasticsearchClusterRunner();
         // create ES nodes
