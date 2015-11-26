@@ -90,6 +90,12 @@ public class LangFieldPluginTest extends TestCase {
         }
 
         {
+            String id = "none";
+            final IndexResponse indexResponse1 = runner.insert(index, type, id,
+                    "{\"id\":\"" + id + "\",\"message\":\"\",\"test\":\"\"}");
+            assertTrue(indexResponse1.isCreated());
+        }
+        {
             String id = "en";
             String message = "This is a pen.";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,

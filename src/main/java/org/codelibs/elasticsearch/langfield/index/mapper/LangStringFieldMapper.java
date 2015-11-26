@@ -400,18 +400,22 @@ public class LangStringFieldMapper extends FieldMapper
                     valueAndBoost.value());
         }
 
-        final LangDetector langDetector = langDetectorFactory.getLangDetector();
-        langDetector.append(valueAndBoost.value());
-        final String lang = langDetector.detect();
-        if (!LangDetector.UNKNOWN_LANG.equals(lang)) {
-            final String langField = fieldType().names().indexName()
-                    + fieldSeparator + lang;
-            try {
-                parseCopyMethod.invoke(null,
-                        new Object[] { langField, context });
-            } catch (Exception e) {
-                throw new IllegalStateException(
-                        "Failed to invoke parseCopy method.", e);
+        final String text = valueAndBoost.value();
+        if (text != null && text.trim().length() > 0) {
+            final LangDetector langDetector = langDetectorFactory
+                    .getLangDetector();
+            langDetector.append(text);
+            final String lang = langDetector.detect();
+            if (!LangDetector.UNKNOWN_LANG.equals(lang)) {
+                final String langField = fieldType().names().indexName()
+                        + fieldSeparator + lang;
+                try {
+                    parseCopyMethod.invoke(null,
+                            new Object[] { langField, context });
+                } catch (Exception e) {
+                    throw new IllegalStateException(
+                            "Failed to invoke parseCopy method.", e);
+                }
             }
         }
     }
