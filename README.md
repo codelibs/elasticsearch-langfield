@@ -9,7 +9,8 @@ LangField Plugin provides a useful feature for multi-language enrivonment.
 
 | Version   | Tested On Elasticsearch |
 |:---------:|:-----------------------:|
-| master    | 1.7.X                   |
+| master    | 2.0.X                   |
+| 2.0.0     | 2.0.0                   |
 | 1.7.0     | 1.7.2                   |
 
 ### Issues/Questions
@@ -21,7 +22,7 @@ Please file an [issue](https://github.com/codelibs/elasticsearch-langfield/issue
 
 ### Install Plugin
 
-    $ $ES_HOME/bin/plugin --install org.codelibs/elasticsearch-langfield/1.7.0
+    $ $ES_HOME/bin/plugin --install org.codelibs/elasticsearch-langfield/2.0.0
 
 ## Getting Started
 
