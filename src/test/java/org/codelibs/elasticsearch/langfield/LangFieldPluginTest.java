@@ -30,11 +30,11 @@ public class LangFieldPluginTest extends TestCase {
             @Override
             public void build(final int number, final Builder settingsBuilder) {
                 settingsBuilder.put("http.cors.enabled", true);
+                settingsBuilder.put("http.cors.allow-origin", "*");
                 settingsBuilder.put("index.number_of_replicas", 0);
                 settingsBuilder.put("index.number_of_shards", 3);
-                settingsBuilder.put("http.cors.allow-origin", "*");
                 settingsBuilder.putArray("discovery.zen.ping.unicast.hosts",
-                        "localhost:9301-9399");
+                        "localhost:9301-9310");
                 settingsBuilder.put("plugin.types",
                         "org.codelibs.elasticsearch.langfield.LangFieldPlugin");
             }
