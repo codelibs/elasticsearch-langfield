@@ -22,7 +22,7 @@ Please file an [issue](https://github.com/codelibs/elasticsearch-langfield/issue
 
 ### Install Plugin
 
-    $ $ES_HOME/bin/plugin --install org.codelibs/elasticsearch-langfield/2.0.0
+    $ $ES_HOME/bin/plugin install org.codelibs/elasticsearch-langfield/2.0.0
 
 ## Getting Started
 
