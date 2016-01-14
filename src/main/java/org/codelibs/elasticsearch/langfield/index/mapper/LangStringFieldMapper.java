@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.SortedSetDocValuesField;
 import org.apache.lucene.index.IndexOptions;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
 import org.codelibs.elasticsearch.langfield.detect.LangDetector;
@@ -44,12 +45,16 @@ public class LangStringFieldMapper extends FieldMapper
 
     private static final String LANG_SETTING_KEY = "lang";
 
+    private static final String LANG_FIELD_SETTING_KEY = "lang_field";
+
     private static final String[] SUPPORTED_LANGUAGES = new String[] { "ar",
             "bg", "bn", "ca", "cs", "da", "de", "el", "en", "es", "et", "fa",
             "fi", "fr", "gu", "he", "hi", "hr", "hu", "id", "it", "ja", "ko",
             "lt", "lv", "mk", "ml", "nl", "no", "pa", "pl", "pt", "ro", "ru",
             "si", "sq", "sv", "ta", "te", "th", "tl", "tr", "uk", "ur", "vi",
             "zh-cn", "zh-tw" };
+
+    private static final String LANG_FIELD = "";
 
     private static final String FIELD_SEPARATOR = "_";
 
@@ -103,6 +108,8 @@ public class LangStringFieldMapper extends FieldMapper
 
         protected String[] supportedLanguages = SUPPORTED_LANGUAGES;
 
+        protected String langField = LANG_FIELD;
+
         public Builder(String name) {
             super(name, Defaults.FIELD_TYPE);
             builder = this;
@@ -139,6 +146,11 @@ public class LangStringFieldMapper extends FieldMapper
             return this;
         }
 
+        public Builder langField(String langField) {
+            this.langField = langField;
+            return this;
+        }
+
         @Override
         public LangStringFieldMapper build(BuilderContext context) {
             if (positionIncrementGap != POSITION_INCREMENT_GAP_USE_ANALYZER) {
@@ -169,7 +181,7 @@ public class LangStringFieldMapper extends FieldMapper
             LangStringFieldMapper fieldMapper = new LangStringFieldMapper(name,
                     fieldType, defaultFieldType, positionIncrementGap,
                     ignoreAbove, fieldSeparator, supportedLanguages,
-                    context.indexSettings(),
+                    langField, context.indexSettings(),
                     multiFieldsBuilder.build(this, context), copyTo);
             fieldMapper.includeInAll(includeInAll);
             return fieldMapper;
@@ -244,9 +256,14 @@ public class LangStringFieldMapper extends FieldMapper
                     iterator.remove();
                 } else if (propName.equals(SEPARATOR_SETTING_KEY)) {
                     builder.fieldSeparator(propNode.toString());
+                    iterator.remove();
                 } else if (propName.equals(LANG_SETTING_KEY)) {
                     builder.supportedLanguages(
                             XContentMapValues.nodeStringArrayValue(propNode));
+                    iterator.remove();
+                } else if (propName.equals(LANG_FIELD_SETTING_KEY)) {
+                    builder.langField(propNode.toString());
+                    iterator.remove();
                 }
             }
             return builder;
@@ -300,12 +317,14 @@ public class LangStringFieldMapper extends FieldMapper
 
     private String[] supportedLanguages;
 
+    private String langField;
+
     private Method parseCopyMethod;
 
     protected LangStringFieldMapper(String simpleName,
             MappedFieldType fieldType, MappedFieldType defaultFieldType,
             int positionIncrementGap, int ignoreAbove, String fieldSeparator,
-            String[] supportedLanguages, Settings indexSettings,
+            String[] supportedLanguages, String langField, Settings indexSettings,
             MultiFields multiFields, CopyTo copyTo) {
         super(simpleName, fieldType, defaultFieldType, indexSettings,
                 multiFields, copyTo);
@@ -319,6 +338,7 @@ public class LangStringFieldMapper extends FieldMapper
         this.ignoreAbove = ignoreAbove;
         this.fieldSeparator = fieldSeparator;
         this.supportedLanguages = supportedLanguages;
+        this.langField = langField;
 
         langDetectorFactory = LangDetectorFactory.create(supportedLanguages);
 
@@ -402,10 +422,7 @@ public class LangStringFieldMapper extends FieldMapper
 
         final String text = valueAndBoost.value();
         if (text != null && text.trim().length() > 0) {
-            final LangDetector langDetector = langDetectorFactory
-                    .getLangDetector();
-            langDetector.append(text);
-            final String lang = langDetector.detect();
+            final String lang = detectLanguage(context, text);
             if (!LangDetector.UNKNOWN_LANG.equals(lang)) {
                 final String langField = fieldType().names().indexName()
                         + fieldSeparator + lang;
@@ -418,6 +435,32 @@ public class LangStringFieldMapper extends FieldMapper
                 }
             }
         }
+    }
+
+    private String detectLanguage(final ParseContext context,
+            final String text) {
+        if (langField != null && langField.length() > 0) {
+            final IndexableField[] langFields = context.doc()
+                    .getFields(langField);
+            if (langFields != null) {
+                for (IndexableField langField : langFields) {
+                    if (langField instanceof Field) {
+                        final String lang = langField.stringValue();
+                        if (lang != null && lang.length() > 0) {
+                            for (final String supportedLang : supportedLanguages) {
+                                if (supportedLang.equals(lang)) {
+                                    return lang;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        final LangDetector langDetector = langDetectorFactory.getLangDetector();
+        langDetector.append(text);
+        return langDetector.detect();
     }
 
     /**
@@ -482,6 +525,7 @@ public class LangStringFieldMapper extends FieldMapper
             this.ignoreAbove = ((LangStringFieldMapper) mergeWith).ignoreAbove;
             this.fieldSeparator = ((LangStringFieldMapper) mergeWith).fieldSeparator;
             this.supportedLanguages = ((LangStringFieldMapper) mergeWith).supportedLanguages;
+            this.langField = ((LangStringFieldMapper) mergeWith).langField;
         }
     }
 
@@ -525,6 +569,9 @@ public class LangStringFieldMapper extends FieldMapper
         if (includeDefaults
                 || !langs.equals(Strings.arrayToDelimitedString(SUPPORTED_LANGUAGES, ","))) {
             builder.field(LANG_SETTING_KEY, langs);
+        }
+        if (includeDefaults || !langField.equals(LANG_FIELD)) {
+            builder.field(LANG_FIELD_SETTING_KEY, langField);
         }
     }
 
