@@ -340,9 +340,10 @@ public class LangStringFieldMapper extends FieldMapper
         this.supportedLanguages = supportedLanguages;
         this.langField = langField;
 
-        langDetectorFactory = LangDetectorFactory.create(supportedLanguages);
 
         try {
+            langDetectorFactory = LangDetectorFactory.create(supportedLanguages);
+
             Class<?> docParserClazz = FieldMapper.class.getClassLoader()
                     .loadClass("org.elasticsearch.index.mapper.DocumentParser");
             parseCopyMethod = docParserClazz.getDeclaredMethod("parseCopy",
@@ -458,9 +459,14 @@ public class LangStringFieldMapper extends FieldMapper
                 }
             }
         }
-        final LangDetector langDetector = langDetectorFactory.getLangDetector();
-        langDetector.append(text);
-        return langDetector.detect();
+        try {
+            final LangDetector langDetector = langDetectorFactory.getLangDetector();
+            langDetector.append(text);
+            return langDetector.detect();
+        } catch (Exception e) {
+            // TODO logger
+            return LangDetector.UNKNOWN_LANG;
+        }
     }
 
     /**
