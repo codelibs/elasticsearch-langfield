@@ -1,7 +1,7 @@
 package org.codelibs.elasticsearch.langfield.index.mapper;
 
 import static org.apache.lucene.index.IndexOptions.NONE;
-import static org.elasticsearch.index.mapper.core.TypeParsers.parseField;
+import static org.elasticsearch.index.mapper.core.TypeParsers.parseTextField;
 import static org.elasticsearch.index.mapper.core.TypeParsers.parseMultiField;
 
 import java.io.IOException;
@@ -29,8 +29,6 @@ import org.elasticsearch.index.mapper.FieldMapper;
 import org.elasticsearch.index.mapper.MappedFieldType;
 import org.elasticsearch.index.mapper.Mapper;
 import org.elasticsearch.index.mapper.MapperParsingException;
-import org.elasticsearch.index.mapper.MergeMappingException;
-import org.elasticsearch.index.mapper.MergeResult;
 import org.elasticsearch.index.mapper.ParseContext;
 import org.elasticsearch.index.mapper.internal.AllFieldMapper;
 
@@ -111,7 +109,7 @@ public class LangStringFieldMapper extends FieldMapper
         protected String langField = LANG_FIELD;
 
         public Builder(String name) {
-            super(name, Defaults.FIELD_TYPE);
+            super(name, Defaults.FIELD_TYPE, Defaults.FIELD_TYPE);
             builder = this;
         }
 
@@ -183,8 +181,7 @@ public class LangStringFieldMapper extends FieldMapper
                     ignoreAbove, fieldSeparator, supportedLanguages,
                     langField, context.indexSettings(),
                     multiFieldsBuilder.build(this, context), copyTo);
-            fieldMapper.includeInAll(includeInAll);
-            return fieldMapper;
+            return fieldMapper.includeInAll(includeInAll);
         }
     }
 
@@ -197,7 +194,7 @@ public class LangStringFieldMapper extends FieldMapper
         public Mapper.Builder parse(String name, Map<String, Object> node,
                 ParserContext parserContext) throws MapperParsingException {
             LangStringFieldMapper.Builder builder = langStringField(name);
-            parseField(builder, name, node, parserContext);
+            parseTextField(builder, name, node, parserContext);
             for (Iterator<Map.Entry<String, Object>> iterator = node.entrySet()
                     .iterator(); iterator.hasNext();) {
                 Map.Entry<String, Object> entry = iterator.next();
@@ -357,22 +354,41 @@ public class LangStringFieldMapper extends FieldMapper
     }
 
     @Override
-    public void includeInAll(Boolean includeInAll) {
+    protected LangStringFieldMapper clone() {
+        return (LangStringFieldMapper) super.clone();
+    }
+
+    @Override
+    public LangStringFieldMapper includeInAll(Boolean includeInAll) {
         if (includeInAll != null) {
-            this.includeInAll = includeInAll;
+            LangStringFieldMapper clone = clone();
+            clone.includeInAll = includeInAll;
+            return clone;
+        } else {
+            return this;
         }
     }
 
     @Override
-    public void includeInAllIfNotSet(Boolean includeInAll) {
+    public LangStringFieldMapper includeInAllIfNotSet(Boolean includeInAll) {
         if (includeInAll != null && this.includeInAll == null) {
-            this.includeInAll = includeInAll;
+            LangStringFieldMapper clone = clone();
+            clone.includeInAll = includeInAll;
+            return clone;
+        } else {
+            return this;
         }
     }
 
     @Override
-    public void unsetIncludeInAll() {
-        includeInAll = null;
+    public LangStringFieldMapper unsetIncludeInAll() {
+        if (includeInAll != null) {
+            LangStringFieldMapper clone = clone();
+            clone.includeInAll = null;
+            return clone;
+        } else {
+            return this;
+        }
     }
 
     @Override
@@ -480,7 +496,7 @@ public class LangStringFieldMapper extends FieldMapper
     public static ValueAndBoost parseCreateFieldForString(ParseContext context,
             String nullValue, float defaultBoost) throws IOException {
         if (context.externalValueSet()) {
-            return new ValueAndBoost((String) context.externalValue(),
+            return new ValueAndBoost(context.externalValue().toString(),
                     defaultBoost);
         }
         XContentParser parser = context.parser();
@@ -520,19 +536,13 @@ public class LangStringFieldMapper extends FieldMapper
     }
 
     @Override
-    public void merge(Mapper mergeWith, MergeResult mergeResult)
-            throws MergeMappingException {
-        super.merge(mergeWith, mergeResult);
-        if (!this.getClass().equals(mergeWith.getClass())) {
-            return;
-        }
-        if (!mergeResult.simulate()) {
-            this.includeInAll = ((LangStringFieldMapper) mergeWith).includeInAll;
-            this.ignoreAbove = ((LangStringFieldMapper) mergeWith).ignoreAbove;
-            this.fieldSeparator = ((LangStringFieldMapper) mergeWith).fieldSeparator;
-            this.supportedLanguages = ((LangStringFieldMapper) mergeWith).supportedLanguages;
-            this.langField = ((LangStringFieldMapper) mergeWith).langField;
-        }
+    protected void doMerge(Mapper mergeWith, boolean updateAllTypes) {
+        super.doMerge(mergeWith, updateAllTypes);
+        this.includeInAll = ((LangStringFieldMapper) mergeWith).includeInAll;
+        this.ignoreAbove = ((LangStringFieldMapper) mergeWith).ignoreAbove;
+        this.fieldSeparator = ((LangStringFieldMapper) mergeWith).fieldSeparator;
+        this.supportedLanguages = ((LangStringFieldMapper) mergeWith).supportedLanguages;
+        this.langField = ((LangStringFieldMapper) mergeWith).langField;
     }
 
     @Override
