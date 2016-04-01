@@ -11,6 +11,7 @@ import java.util.Random;
 import java.util.regex.Pattern;
 
 import org.codelibs.elasticsearch.langfield.detect.util.NGram;
+import org.elasticsearch.ElasticsearchException;
 
 /**
  * {@link LangDetector} class is to detect language from specified text.
@@ -136,16 +137,14 @@ public class LangDetector {
             if (priorMap.containsKey(lang)) {
                 final double p = priorMap.get(lang);
                 if (p < 0) {
-                    throw new LangDetectException(ErrorCode.InitParamError,
-                            "Prior probability must be non-negative.");
+                    throw new ElasticsearchException("Prior probability must be non-negative.");
                 }
                 this.priorMap[i] = p;
                 sump += p;
             }
         }
         if (sump <= 0) {
-            throw new LangDetectException(ErrorCode.InitParamError,
-                    "More one of prior probability must be non-zero.");
+            throw new ElasticsearchException("More one of prior probability must be non-zero.");
         }
         for (int i = 0; i < this.priorMap.length; ++i) {
             this.priorMap[i] /= sump;
@@ -258,8 +257,7 @@ public class LangDetector {
         cleaningText();
         final List<String> ngrams = extractNGrams();
         if (ngrams.size() == 0) {
-            throw new LangDetectException(ErrorCode.CantDetectError,
-                    "no features in text");
+            throw new ElasticsearchException("no features in text");
         }
 
         langprob = new double[langlist.size()];

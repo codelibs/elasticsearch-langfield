@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import org.codelibs.elasticsearch.langfield.detect.util.LangProfile;
+import org.elasticsearch.ElasticsearchException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,35 +51,35 @@ public class LangDetectorTest {
     }
 
     @Test
-    public final void testDetector1() throws LangDetectException {
+    public final void testDetector1() throws ElasticsearchException {
         LangDetector detect = langDetectorFactory.getLangDetector();
         detect.append("a");
         assertEquals(detect.detect(), "en");
     }
 
     @Test
-    public final void testDetector2() throws LangDetectException {
+    public final void testDetector2() throws ElasticsearchException {
         LangDetector detect = langDetectorFactory.getLangDetector();
         detect.append("b d");
         assertEquals(detect.detect(), "fr");
     }
 
     @Test
-    public final void testDetector3() throws LangDetectException {
+    public final void testDetector3() throws ElasticsearchException {
         LangDetector detect = langDetectorFactory.getLangDetector();
         detect.append("d e");
         assertEquals(detect.detect(), "en");
     }
 
     @Test
-    public final void testDetector4() throws LangDetectException {
+    public final void testDetector4() throws ElasticsearchException {
         LangDetector detect = langDetectorFactory.getLangDetector();
         detect.append("\u3042\u3042\u3042\u3042a");
         assertEquals(detect.detect(), "ja");
     }
 
     @Test
-    public final void testLangList() throws LangDetectException {
+    public final void testLangList() throws ElasticsearchException {
         List<String> langList = langDetectorFactory.getLangList();
         assertEquals(langList.size(), 3);
         assertEquals(langList.get(0), "en");
@@ -87,7 +88,7 @@ public class LangDetectorTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public final void testLangListException() throws LangDetectException {
+    public final void testLangListException() throws ElasticsearchException {
         List<String> langList = langDetectorFactory.getLangList();
         langList.add("hoge");
         //langList.add(1, "hoge");
