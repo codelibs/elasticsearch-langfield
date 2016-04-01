@@ -1,11 +1,13 @@
 package org.codelibs.elasticsearch.langfield.index.mapper;
 
 import static org.apache.lucene.index.IndexOptions.NONE;
-import static org.elasticsearch.index.mapper.core.TypeParsers.parseTextField;
 import static org.elasticsearch.index.mapper.core.TypeParsers.parseMultiField;
+import static org.elasticsearch.index.mapper.core.TypeParsers.parseTextField;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -337,20 +339,21 @@ public class LangStringFieldMapper extends FieldMapper
         this.supportedLanguages = supportedLanguages;
         this.langField = langField;
 
+        langDetectorFactory = LangDetectorFactory.create(supportedLanguages);
 
-        try {
-            langDetectorFactory = LangDetectorFactory.create(supportedLanguages);
-
-            Class<?> docParserClazz = FieldMapper.class.getClassLoader()
-                    .loadClass("org.elasticsearch.index.mapper.DocumentParser");
-            parseCopyMethod = docParserClazz.getDeclaredMethod("parseCopy",
-                    new Class[] { String.class, ParseContext.class });
-            parseCopyMethod.setAccessible(true);
-        } catch (Exception e) {
-            throw new IllegalStateException(
-                    "Failed to access DocumentParser#parseCopy(String, ParseContext).",
-                    e);
-        }
+        parseCopyMethod = AccessController.doPrivileged(new PrivilegedAction<Method>() {
+            @Override
+            public Method run() {
+                try {
+                    Class<?> docParserClazz = FieldMapper.class.getClassLoader().loadClass("org.elasticsearch.index.mapper.DocumentParser");
+                    Method method = docParserClazz.getDeclaredMethod("parseCopy", new Class[] { String.class, ParseContext.class });
+                    method.setAccessible(true);
+                    return method;
+                } catch (Exception e) {
+                    throw new IllegalStateException("Failed to access DocumentParser#parseCopy(String, ParseContext).", e);
+                }
+            }
+        });
     }
 
     @Override
