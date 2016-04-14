@@ -435,10 +435,6 @@ public class LangStringFieldMapper extends FieldMapper
                     new SortedSetDocValuesField(fieldType().names().indexName(),
                             new BytesRef(valueAndBoost.value())));
         }
-        if (fields.isEmpty()) {
-            context.ignoredValue(fieldType().names().indexName(),
-                    valueAndBoost.value());
-        }
 
         final String text = valueAndBoost.value();
         if (text != null && text.trim().length() > 0) {
@@ -552,6 +548,7 @@ public class LangStringFieldMapper extends FieldMapper
     protected void doXContentBody(XContentBuilder builder,
             boolean includeDefaults, Params params) throws IOException {
         super.doXContentBody(builder, includeDefaults, params);
+        doXContentAnalyzers(builder, includeDefaults);
 
         if (includeDefaults || fieldType().nullValue() != null) {
             builder.field("null_value", fieldType().nullValue());
@@ -565,18 +562,6 @@ public class LangStringFieldMapper extends FieldMapper
         if (includeDefaults
                 || positionIncrementGap != POSITION_INCREMENT_GAP_USE_ANALYZER) {
             builder.field("position_increment_gap", positionIncrementGap);
-        }
-        NamedAnalyzer searchQuoteAnalyzer = fieldType().searchQuoteAnalyzer();
-        if (searchQuoteAnalyzer != null && !searchQuoteAnalyzer.name()
-                .equals(fieldType().searchAnalyzer().name())) {
-            builder.field("search_quote_analyzer", searchQuoteAnalyzer.name());
-        } else if (includeDefaults) {
-            if (searchQuoteAnalyzer == null) {
-                builder.field("search_quote_analyzer", "default");
-            } else {
-                builder.field("search_quote_analyzer",
-                        searchQuoteAnalyzer.name());
-            }
         }
         if (includeDefaults || ignoreAbove != Defaults.IGNORE_ABOVE) {
             builder.field("ignore_above", ignoreAbove);
