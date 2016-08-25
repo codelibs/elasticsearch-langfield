@@ -18,7 +18,7 @@ public class NGram {
 
     public final static int N_GRAM = 3;
 
-    public static Map<Character, Character> cjkMap;
+    public static final Map<Character, Character> cjkMap;
 
     private StringBuilder grams;
 
