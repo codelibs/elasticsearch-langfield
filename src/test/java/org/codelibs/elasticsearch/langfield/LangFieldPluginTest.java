@@ -6,6 +6,7 @@ import org.codelibs.elasticsearch.runner.ElasticsearchClusterRunner;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.Settings.Builder;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -59,7 +60,7 @@ public class LangFieldPluginTest extends TestCase {
 
         {
             // create an index
-            runner.createIndex(index, null);
+            runner.createIndex(index, (Settings) null);
             runner.ensureYellow(index);
 
             // create a mapping
@@ -201,7 +202,7 @@ public class LangFieldPluginTest extends TestCase {
 
         {
             // create an index
-            runner.createIndex(index, null);
+            runner.createIndex(index, (Settings) null);
             runner.ensureYellow(index);
 
             // create a mapping
