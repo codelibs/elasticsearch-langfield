@@ -311,6 +311,12 @@ public class LangFieldPluginTest extends TestCase {
                     .field("lang_field", "lang")//
                     .endObject()//
 
+                    // content
+                    .startObject("content")//
+                    .field("type", "langstring")//
+                    .field("lang_field", "lang")//
+                    .endObject()//
+
                     // lang
                     .startObject("lang")//
                     .field("type", "string")//
@@ -350,8 +356,9 @@ public class LangFieldPluginTest extends TestCase {
         {
             String id = "ja";
             String message = "This is a pen.";
+            String content = "This is an apple.";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
-                    "{\"id\":\"" + id + "\",\"lang\":\"ja\",\"message\":\"" + message + "\"}");
+                    "{\"id\":\"" + id + "\",\"lang\":\"ja\",\"message\":\"" + message + "\",\"content\":\"" + content + "\"}");
             assertTrue(indexResponse1.isCreated());
         }
 
@@ -390,6 +397,30 @@ public class LangFieldPluginTest extends TestCase {
                     .execute().actionGet();
             SearchHits searchHits = response.getHits();
             assertEquals(1, searchHits.getTotalHits());
+        }
+        {
+            SearchResponse response = client.prepareSearch(index).setTypes(type)
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.matchQuery("content_ja", "pen")))
+                    .execute().actionGet();
+            SearchHits searchHits = response.getHits();
+            assertEquals(1, searchHits.getTotalHits());
+        }
+        {
+            SearchResponse response = client.prepareSearch(index).setTypes(type)
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.matchQuery("content_ja", "apple")))
+                    .execute().actionGet();
+            SearchHits searchHits = response.getHits();
+            assertEquals(1, searchHits.getTotalHits());
+        }
+        {
+            SearchResponse response = client.prepareSearch(index).setTypes(type)
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.matchQuery("content_ja", "pineapple")))
+                    .execute().actionGet();
+            SearchHits searchHits = response.getHits();
+            assertEquals(0, searchHits.getTotalHits());
         }
 
     }
