@@ -47,6 +47,8 @@ public class LangStringFieldMapper extends FieldMapper
 
     private static final String LANG_FIELD_SETTING_KEY = "lang_field";
 
+    private static final String LANG_BASE_NAME_SETTING_KEY = "lang_base_name";
+
     private static final String[] SUPPORTED_LANGUAGES = new String[] { "ar",
             "bg", "bn", "ca", "cs", "da", "de", "el", "en", "es", "et", "fa",
             "fi", "fr", "gu", "he", "hi", "hr", "hu", "id", "it", "ja", "ko",
@@ -57,6 +59,8 @@ public class LangStringFieldMapper extends FieldMapper
     private static final String LANG_FIELD = "";
 
     private static final String FIELD_SEPARATOR = "_";
+
+    private static final String LANG_BASE_NAME = "";
 
     public static class Defaults {
         public static final MappedFieldType FIELD_TYPE = new LangStringFieldType();
@@ -110,6 +114,8 @@ public class LangStringFieldMapper extends FieldMapper
 
         protected String langField = LANG_FIELD;
 
+        protected String langBaseName = LANG_BASE_NAME;
+
         public Builder(String name) {
             super(name, Defaults.FIELD_TYPE, Defaults.FIELD_TYPE);
             builder = this;
@@ -151,6 +157,11 @@ public class LangStringFieldMapper extends FieldMapper
             return this;
         }
 
+        public Builder langBaseName(String langBaseName) {
+            this.langBaseName = langBaseName;
+            return this;
+        }
+
         @Override
         public LangStringFieldMapper build(BuilderContext context) {
             if (positionIncrementGap != POSITION_INCREMENT_GAP_USE_ANALYZER) {
@@ -178,10 +189,8 @@ public class LangStringFieldMapper extends FieldMapper
                 }
             }
             setupFieldType(context);
-            LangStringFieldMapper fieldMapper = new LangStringFieldMapper(name,
-                    fieldType, defaultFieldType, positionIncrementGap,
-                    ignoreAbove, fieldSeparator, supportedLanguages,
-                    langField, context.indexSettings(),
+            LangStringFieldMapper fieldMapper = new LangStringFieldMapper(name, fieldType, defaultFieldType, positionIncrementGap,
+                    ignoreAbove, fieldSeparator, supportedLanguages, langField, langBaseName, context.indexSettings(),
                     multiFieldsBuilder.build(this, context), copyTo);
             return fieldMapper.includeInAll(includeInAll);
         }
@@ -263,6 +272,9 @@ public class LangStringFieldMapper extends FieldMapper
                 } else if (propName.equals(LANG_FIELD_SETTING_KEY)) {
                     builder.langField(propNode.toString());
                     iterator.remove();
+                } else if (propName.equals(LANG_BASE_NAME_SETTING_KEY)) {
+                    builder.langBaseName(propNode.toString());
+                    iterator.remove();
                 }
             }
             return builder;
@@ -318,13 +330,13 @@ public class LangStringFieldMapper extends FieldMapper
 
     private String langField;
 
+    private String langBaseName;
+
     private Method parseCopyMethod;
 
-    protected LangStringFieldMapper(String simpleName,
-            MappedFieldType fieldType, MappedFieldType defaultFieldType,
-            int positionIncrementGap, int ignoreAbove, String fieldSeparator,
-            String[] supportedLanguages, String langField, Settings indexSettings,
-            MultiFields multiFields, CopyTo copyTo) {
+    protected LangStringFieldMapper(String simpleName, MappedFieldType fieldType, MappedFieldType defaultFieldType,
+            int positionIncrementGap, int ignoreAbove, String fieldSeparator, String[] supportedLanguages, String langField,
+            String langBaseName, Settings indexSettings, MultiFields multiFields, CopyTo copyTo) {
         super(simpleName, fieldType, defaultFieldType, indexSettings,
                 multiFields, copyTo);
         if (fieldType.tokenized() && fieldType.indexOptions() != NONE
@@ -338,6 +350,7 @@ public class LangStringFieldMapper extends FieldMapper
         this.fieldSeparator = fieldSeparator;
         this.supportedLanguages = supportedLanguages;
         this.langField = langField;
+        this.langBaseName = langBaseName;
 
         langDetectorFactory = LangDetectorFactory.create(supportedLanguages);
 
@@ -440,11 +453,15 @@ public class LangStringFieldMapper extends FieldMapper
         if (text != null && text.trim().length() > 0) {
             final String lang = detectLanguage(context, text);
             if (!LangDetector.UNKNOWN_LANG.equals(lang)) {
-                final String langField = fieldType().names().indexName()
-                        + fieldSeparator + lang;
+                final StringBuilder langFieldBuf = new StringBuilder();
+                if (langBaseName.length() == 0) {
+                    langFieldBuf.append(fieldType().names().indexName());
+                } else {
+                    langFieldBuf.append(langBaseName);
+                }
+                langFieldBuf.append(fieldSeparator).append(lang);
                 try {
-                    parseCopyMethod.invoke(null,
-                            new Object[] { langField, context });
+                    parseCopyMethod.invoke(null, new Object[] { langFieldBuf.toString(), context });
                 } catch (Exception e) {
                     throw new IllegalStateException(
                             "Failed to invoke parseCopy method.", e);
@@ -542,6 +559,7 @@ public class LangStringFieldMapper extends FieldMapper
         this.fieldSeparator = ((LangStringFieldMapper) mergeWith).fieldSeparator;
         this.supportedLanguages = ((LangStringFieldMapper) mergeWith).supportedLanguages;
         this.langField = ((LangStringFieldMapper) mergeWith).langField;
+        this.langBaseName = ((LangStringFieldMapper) mergeWith).langBaseName;
     }
 
     @Override
@@ -576,6 +594,9 @@ public class LangStringFieldMapper extends FieldMapper
         }
         if (includeDefaults || !langField.equals(LANG_FIELD)) {
             builder.field(LANG_FIELD_SETTING_KEY, langField);
+        }
+        if (includeDefaults || !langField.equals(LANG_BASE_NAME)) {
+            builder.field(LANG_BASE_NAME_SETTING_KEY, langBaseName);
         }
     }
 

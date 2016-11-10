@@ -194,7 +194,6 @@ public class LangFieldPluginTest extends TestCase {
 
     }
 
-
     public void test_withLang() throws Exception {
 
         final String index = "test_index";
@@ -223,7 +222,7 @@ public class LangFieldPluginTest extends TestCase {
                     .field("lang_field", "lang")//
                     .endObject()//
 
-                    // message
+                    // lang
                     .startObject("lang")//
                     .field("type", "string")//
                     .field("index", "not_analyzed")//
@@ -283,4 +282,115 @@ public class LangFieldPluginTest extends TestCase {
 
     }
 
+    public void test_withLangBaseName() throws Exception {
+
+        final String index = "test_index";
+        final String type = "test_type";
+
+        {
+            // create an index
+            runner.createIndex(index, (Settings) null);
+            runner.ensureYellow(index);
+
+            // create a mapping
+            final XContentBuilder mappingBuilder = XContentFactory.jsonBuilder()//
+                    .startObject()//
+                    .startObject(type)//
+                    .startObject("properties")//
+
+                    // id
+                    .startObject("id")//
+                    .field("type", "string")//
+                    .field("index", "not_analyzed")//
+                    .endObject()//
+
+                    // message
+                    .startObject("message")//
+                    .field("type", "langstring")//
+                    .field("lang_base_name", "content")//
+                    .field("lang_field", "lang")//
+                    .endObject()//
+
+                    // lang
+                    .startObject("lang")//
+                    .field("type", "string")//
+                    .field("index", "not_analyzed")//
+                    .endObject()//
+
+                    .endObject()//
+                    .endObject()//
+                    .endObject();
+            runner.createMapping(index, type, mappingBuilder);
+        }
+
+        if (!runner.indexExists(index)) {
+            fail();
+        }
+
+        {
+            String id = "none";
+            final IndexResponse indexResponse1 = runner.insert(index, type, id,
+                    "{\"id\":\"" + id + "\",\"message\":\"\",\"test\":\"\"}");
+            assertTrue(indexResponse1.isCreated());
+        }
+        {
+            String id = "default";
+            String message = "This is a pen.";
+            final IndexResponse indexResponse1 = runner.insert(index, type, id,
+                    "{\"id\":\"" + id + "\",\"message\":\"" + message + "\"}");
+            assertTrue(indexResponse1.isCreated());
+        }
+        {
+            String id = "en";
+            String message = "This is a pen.";
+            final IndexResponse indexResponse1 = runner.insert(index, type, id,
+                    "{\"id\":\"" + id + "\",\"lang\":\"en\",\"message\":\"" + message + "\"}");
+            assertTrue(indexResponse1.isCreated());
+        }
+        {
+            String id = "ja";
+            String message = "This is a pen.";
+            final IndexResponse indexResponse1 = runner.insert(index, type, id,
+                    "{\"id\":\"" + id + "\",\"lang\":\"ja\",\"message\":\"" + message + "\"}");
+            assertTrue(indexResponse1.isCreated());
+        }
+
+        runner.refresh();
+
+        final Client client = runner.client();
+
+        {
+            SearchResponse response = client.prepareSearch(index).setTypes(type)
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.existsQuery("message_en")))
+                    .execute().actionGet();
+            SearchHits searchHits = response.getHits();
+            assertEquals(0, searchHits.getTotalHits());
+        }
+        {
+            SearchResponse response = client.prepareSearch(index).setTypes(type)
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.existsQuery("message_ja")))
+                    .execute().actionGet();
+            SearchHits searchHits = response.getHits();
+            assertEquals(0, searchHits.getTotalHits());
+        }
+        {
+            SearchResponse response = client.prepareSearch(index).setTypes(type)
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.existsQuery("content_en")))
+                    .execute().actionGet();
+            SearchHits searchHits = response.getHits();
+            assertEquals(2, searchHits.getTotalHits());
+        }
+        {
+            SearchResponse response = client.prepareSearch(index).setTypes(type)
+                    .setQuery(QueryBuilders.boolQuery()
+                            .filter(QueryBuilders.existsQuery("content_ja")))
+                    .execute().actionGet();
+            SearchHits searchHits = response.getHits();
+            assertEquals(1, searchHits.getTotalHits());
+        }
+
+    }
 }
