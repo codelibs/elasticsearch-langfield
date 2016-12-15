@@ -3,6 +3,7 @@ package org.codelibs.elasticsearch.langfield;
 import static org.codelibs.elasticsearch.runner.ElasticsearchClusterRunner.newConfigs;
 
 import org.codelibs.elasticsearch.runner.ElasticsearchClusterRunner;
+import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -32,14 +33,10 @@ public class LangFieldPluginTest extends TestCase {
             public void build(final int number, final Builder settingsBuilder) {
                 settingsBuilder.put("http.cors.enabled", true);
                 settingsBuilder.put("http.cors.allow-origin", "*");
-                settingsBuilder.put("index.number_of_replicas", 0);
-                settingsBuilder.put("index.number_of_shards", 3);
                 settingsBuilder.putArray("discovery.zen.ping.unicast.hosts",
                         "localhost:9301-9310");
-                settingsBuilder.put("plugin.types",
-                        "org.codelibs.elasticsearch.langfield.LangFieldPlugin");
             }
-        }).build(newConfigs().clusterName(clusterName).numOfNode(1));
+        }).build(newConfigs().clusterName(clusterName).numOfNode(1).pluginTypes("org.codelibs.elasticsearch.langfield.LangFieldPlugin"));
 
         // wait for yellow status
         runner.ensureYellow();
@@ -94,49 +91,49 @@ public class LangFieldPluginTest extends TestCase {
             String id = "none";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"message\":\"\",\"test\":\"\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
         {
             String id = "en";
             String message = "This is a pen.";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"message\":\"" + message + "\",\"test\":\"" + message + "\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
         {
             String id = "fr";
             String message = "C'est un stylo.";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"message\":\"" + message + "\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
         {
             String id = "ja";
             String message = "これはペンです。";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"message\":\"" + message + "\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
         {
             String id = "ko";
             String message = "이것은펜 이다 .";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"message\":\"" + message + "\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
         {
             String id = "zh-cn";
             String message = "这是一支笔。";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"message\":\"" + message + "\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
         {
             String id = "zh-tw";
             String message = "這是一支鋼筆。";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"message\":\"" + message + "\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
 
         runner.refresh();
@@ -242,21 +239,21 @@ public class LangFieldPluginTest extends TestCase {
             String id = "none";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"lang\":\"\",\"message\":\"\",\"test\":\"\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
         {
             String id = "en";
             String message = "This is a pen.";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"lang\":\"en\",\"message\":\"" + message + "\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
         {
             String id = "ja";
             String message = "This is a pen.";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"lang\":\"ja\",\"message\":\"" + message + "\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
 
         runner.refresh();
@@ -309,6 +306,7 @@ public class LangFieldPluginTest extends TestCase {
                     .field("type", "langstring")//
                     .field("lang_base_name", "content")//
                     .field("lang_field", "lang")//
+                    .field("index", "no")//
                     .endObject()//
 
                     // content
@@ -337,21 +335,21 @@ public class LangFieldPluginTest extends TestCase {
             String id = "none";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"message\":\"\",\"test\":\"\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
         {
             String id = "default";
-            String message = "This is a pen.";
+            String message = "This is a dog.";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"message\":\"" + message + "\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
         {
             String id = "en";
-            String message = "This is a pen.";
+            String message = "This is a pineapple.";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"lang\":\"en\",\"message\":\"" + message + "\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
         {
             String id = "ja";
@@ -359,7 +357,7 @@ public class LangFieldPluginTest extends TestCase {
             String content = "This is an apple.";
             final IndexResponse indexResponse1 = runner.insert(index, type, id,
                     "{\"id\":\"" + id + "\",\"lang\":\"ja\",\"message\":\"" + message + "\",\"content\":\"" + content + "\"}");
-            assertTrue(indexResponse1.isCreated());
+            assertEquals(Result.CREATED, indexResponse1.getResult());
         }
 
         runner.refresh();

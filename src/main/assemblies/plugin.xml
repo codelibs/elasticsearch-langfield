@@ -24,7 +24,6 @@
 			<useTransitiveFiltering>true</useTransitiveFiltering>
 			<excludes>
 				<exclude>org.elasticsearch:elasticsearch</exclude>
-				<exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
 			</excludes>
 		</dependencySet>
 	</dependencySets>
