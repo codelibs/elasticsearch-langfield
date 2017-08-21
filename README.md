@@ -7,17 +7,7 @@ LangField Plugin provides a useful feature for multi-language enrivonment.
 
 ## Version
 
-| Version   | Tested On Elasticsearch |
-|:---------:|:-----------------------:|
-| master    | 5.3.X                   |
-| 5.3.0     | 5.3.0                   |
-| 5.0.0     | 5.0.2                   |
-| 2.4.1     | 2.4.1                   |
-| 2.3.1     | 2.3.5                   |
-| 2.2.0     | 2.2.2                   |
-| 2.1.2     | 2.1.2                   |
-| 2.0.0     | 2.0.0                   |
-| 1.7.0     | 1.7.2                   |
+[Versions in Maven Repository](http://central.maven.org/maven2/org/codelibs/elasticsearch-langfield/)
 
 ### Issues/Questions
 
