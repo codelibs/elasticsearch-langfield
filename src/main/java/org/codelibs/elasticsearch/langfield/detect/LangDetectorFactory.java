@@ -70,16 +70,13 @@ public class LangDetectorFactory {
             if (file.getName().startsWith(".") || !file.isFile()) {
                 continue;
             }
-            final LangProfile profile = AccessController.doPrivileged(new PrivilegedAction<LangProfile>() {
-                @Override
-                public LangProfile run() {
-                    try (InputStream is = new FileInputStream(file);) {
-                        return mapper.readValue(is, LangProfile.class);
-                    } catch (final IOException e) {
-                        throw new ElasticsearchException("can't open '" + file.getName() + "'", e);
-                    } catch (final Exception e) {
-                        throw new ElasticsearchException("profile format error in '" + file.getName() + "'", e);
-                    }
+            final LangProfile profile = AccessController.doPrivileged((PrivilegedAction<LangProfile>) () -> {
+                try (InputStream is = new FileInputStream(file);) {
+                    return mapper.readValue(is, LangProfile.class);
+                } catch (final IOException e1) {
+                    throw new ElasticsearchException("can't open '" + file.getName() + "'", e1);
+                } catch (final Exception e2) {
+                    throw new ElasticsearchException("profile format error in '" + file.getName() + "'", e2);
                 }
             });
             factory.addProfile(profile, index, langsize);
@@ -94,19 +91,16 @@ public class LangDetectorFactory {
         final int langsize = langs.length;
         int index = 0;
         for (final String lang : langs) {
-            final LangProfile profile = AccessController.doPrivileged(new PrivilegedAction<LangProfile>() {
-                @Override
-                public LangProfile run() {
-                    try (InputStream is = LangDetectorFactory.class.getResourceAsStream("/profiles/" + lang)) {
-                        if (is == null) {
-                            throw new IOException("'/profiles/" + lang + "' does not exist.");
-                        }
-                        return mapper.readValue(is, LangProfile.class);
-                    } catch (final IOException e) {
-                        throw new ElasticsearchException("can't open 'profiles/" + lang + "'", e);
-                    } catch (final Exception e) {
-                        throw new ElasticsearchException("profile format error in 'profiles/" + lang + "'", e);
+            final LangProfile profile = AccessController.doPrivileged((PrivilegedAction<LangProfile>) () -> {
+                try (InputStream is = LangDetectorFactory.class.getResourceAsStream("/profiles/" + lang)) {
+                    if (is == null) {
+                        throw new IOException("'/profiles/" + lang + "' does not exist.");
                     }
+                    return mapper.readValue(is, LangProfile.class);
+                } catch (final IOException e1) {
+                    throw new ElasticsearchException("can't open 'profiles/" + lang + "'", e1);
+                } catch (final Exception e2) {
+                    throw new ElasticsearchException("profile format error in 'profiles/" + lang + "'", e2);
                 }
             });
             factory.addProfile(profile, index, langsize);

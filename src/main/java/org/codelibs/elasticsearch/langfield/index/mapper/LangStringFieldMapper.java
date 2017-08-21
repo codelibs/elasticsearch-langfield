@@ -123,7 +123,7 @@ public class LangStringFieldMapper extends FieldMapper {
 
         protected String langBaseName = LANG_BASE_NAME;
 
-        public Builder(String name) {
+        public Builder(final String name) {
             super(name, Defaults.FIELD_TYPE, Defaults.FIELD_TYPE);
             builder = this;
         }
@@ -133,7 +133,7 @@ public class LangStringFieldMapper extends FieldMapper {
             return (LangStringFieldType) super.fieldType();
         }
 
-        public Builder positionIncrementGap(int positionIncrementGap) {
+        public Builder positionIncrementGap(final int positionIncrementGap) {
             if (positionIncrementGap < 0) {
                 throw new MapperParsingException("[positions_increment_gap] must be positive, got " + positionIncrementGap);
             }
@@ -141,45 +141,45 @@ public class LangStringFieldMapper extends FieldMapper {
             return this;
         }
 
-        public Builder fielddata(boolean fielddata) {
+        public Builder fielddata(final boolean fielddata) {
             fieldType().setFielddata(fielddata);
             return builder;
         }
 
         @Override
-        public Builder docValues(boolean docValues) {
+        public Builder docValues(final boolean docValues) {
             if (docValues) {
                 throw new IllegalArgumentException("[text] fields do not support doc values");
             }
             return super.docValues(docValues);
         }
 
-        public Builder eagerGlobalOrdinals(boolean eagerGlobalOrdinals) {
+        public Builder eagerGlobalOrdinals(final boolean eagerGlobalOrdinals) {
             fieldType().setEagerGlobalOrdinals(eagerGlobalOrdinals);
             return builder;
         }
 
-        public Builder fieldSeparator(String fieldSeparator) {
+        public Builder fieldSeparator(final String fieldSeparator) {
             this.fieldSeparator = fieldSeparator;
             return this;
         }
 
-        public Builder supportedLanguages(String[] supportedLanguages) {
+        public Builder supportedLanguages(final String[] supportedLanguages) {
             this.supportedLanguages = supportedLanguages;
             return this;
         }
 
-        public Builder langField(String langField) {
+        public Builder langField(final String langField) {
             this.langField = langField;
             return this;
         }
 
-        public Builder langBaseName(String langBaseName) {
+        public Builder langBaseName(final String langBaseName) {
             this.langBaseName = langBaseName;
             return this;
         }
 
-        public Builder fielddataFrequencyFilter(double minFreq, double maxFreq, int minSegmentSize) {
+        public Builder fielddataFrequencyFilter(final double minFreq, final double maxFreq, final int minSegmentSize) {
             fieldType().setFielddataMinFrequency(minFreq);
             fieldType().setFielddataMaxFrequency(maxFreq);
             fieldType().setFielddataMinSegmentSize(minSegmentSize);
@@ -187,7 +187,7 @@ public class LangStringFieldMapper extends FieldMapper {
         }
 
         @Override
-        public LangStringFieldMapper build(BuilderContext context) {
+        public LangStringFieldMapper build(final BuilderContext context) {
             if (positionIncrementGap != POSITION_INCREMENT_GAP_USE_ANALYZER) {
                 if (fieldType.indexOptions().compareTo(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS) < 0) {
                     throw new IllegalArgumentException("Cannot set position_increment_gap on field ["
@@ -207,10 +207,10 @@ public class LangStringFieldMapper extends FieldMapper {
 
     public static class TypeParser implements Mapper.TypeParser {
         @Override
-        public Mapper.Builder parse(String fieldName, Map<String, Object> node, ParserContext parserContext) throws MapperParsingException {
+        public Mapper.Builder parse(final String fieldName, final Map<String, Object> node, final ParserContext parserContext) throws MapperParsingException {
             if (parserContext.indexVersionCreated().before(Version.V_5_0_0_alpha1)) {
                 // Downgrade "text" to "string" in indexes created in 2.x so you can use modern syntax against old indexes
-                Set<String> unsupportedParameters = new HashSet<>(node.keySet());
+                final Set<String> unsupportedParameters = new HashSet<>(node.keySet());
                 unsupportedParameters.removeAll(SUPPORTED_PARAMETERS_FOR_AUTO_DOWNGRADE_TO_STRING);
                 if (false == SUPPORTED_PARAMETERS_FOR_AUTO_DOWNGRADE_TO_STRING.containsAll(node.keySet())) {
                     throw new IllegalArgumentException("Automatic downgrade from [text] to [string] failed because parameters "
@@ -243,17 +243,17 @@ public class LangStringFieldMapper extends FieldMapper {
 
                 return new StringFieldMapper.TypeParser().parse(fieldName, node, parserContext);
             }
-            LangStringFieldMapper.Builder builder = new LangStringFieldMapper.Builder(fieldName);
+            final LangStringFieldMapper.Builder builder = new LangStringFieldMapper.Builder(fieldName);
             builder.fieldType().setIndexAnalyzer(parserContext.getIndexAnalyzers().getDefaultIndexAnalyzer());
             builder.fieldType().setSearchAnalyzer(parserContext.getIndexAnalyzers().getDefaultSearchAnalyzer());
             builder.fieldType().setSearchQuoteAnalyzer(parserContext.getIndexAnalyzers().getDefaultSearchQuoteAnalyzer());
             parseTextField(builder, fieldName, node, parserContext);
-            for (Iterator<Map.Entry<String, Object>> iterator = node.entrySet().iterator(); iterator.hasNext();) {
-                Map.Entry<String, Object> entry = iterator.next();
-                String propName = entry.getKey();
-                Object propNode = entry.getValue();
+            for (final Iterator<Map.Entry<String, Object>> iterator = node.entrySet().iterator(); iterator.hasNext();) {
+                final Map.Entry<String, Object> entry = iterator.next();
+                final String propName = entry.getKey();
+                final Object propNode = entry.getValue();
                 if (propName.equals("position_increment_gap")) {
-                    int newPositionIncrementGap = XContentMapValues.nodeIntegerValue(propNode, -1);
+                    final int newPositionIncrementGap = XContentMapValues.nodeIntegerValue(propNode, -1);
                     builder.positionIncrementGap(newPositionIncrementGap);
                     iterator.remove();
                 } else if (propName.equals("fielddata")) {
@@ -263,10 +263,10 @@ public class LangStringFieldMapper extends FieldMapper {
                     builder.eagerGlobalOrdinals(XContentMapValues.nodeBooleanValue(propNode));
                     iterator.remove();
                 } else if (propName.equals("fielddata_frequency_filter")) {
-                    Map<?,?> frequencyFilter = (Map<?, ?>) propNode;
-                    double minFrequency = XContentMapValues.nodeDoubleValue(frequencyFilter.remove("min"), 0);
-                    double maxFrequency = XContentMapValues.nodeDoubleValue(frequencyFilter.remove("max"), Integer.MAX_VALUE);
-                    int minSegmentSize = XContentMapValues.nodeIntegerValue(frequencyFilter.remove("min_segment_size"), 0);
+                    final Map<?,?> frequencyFilter = (Map<?, ?>) propNode;
+                    final double minFrequency = XContentMapValues.nodeDoubleValue(frequencyFilter.remove("min"), 0);
+                    final double maxFrequency = XContentMapValues.nodeDoubleValue(frequencyFilter.remove("max"), Integer.MAX_VALUE);
+                    final int minSegmentSize = XContentMapValues.nodeIntegerValue(frequencyFilter.remove("min_segment_size"), 0);
                     builder.fielddataFrequencyFilter(minFrequency, maxFrequency, minSegmentSize);
                     DocumentMapperParser.checkNoRemainingFields(propName, frequencyFilter, parserContext.indexVersionCreated());
                     iterator.remove();
@@ -304,7 +304,7 @@ public class LangStringFieldMapper extends FieldMapper {
             fielddataMinSegmentSize = Defaults.FIELDDATA_MIN_SEGMENT_SIZE;
         }
 
-        protected LangStringFieldType(LangStringFieldType ref) {
+        protected LangStringFieldType(final LangStringFieldType ref) {
             super(ref);
             this.fielddata = ref.fielddata;
             this.fielddataMinFrequency = ref.fielddataMinFrequency;
@@ -312,16 +312,17 @@ public class LangStringFieldMapper extends FieldMapper {
             this.fielddataMinSegmentSize = ref.fielddataMinSegmentSize;
         }
 
+        @Override
         public LangStringFieldType clone() {
             return new LangStringFieldType(this);
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (super.equals(o) == false) {
                 return false;
             }
-            LangStringFieldType that = (LangStringFieldType) o;
+            final LangStringFieldType that = (LangStringFieldType) o;
             return fielddata == that.fielddata
                     && fielddataMinFrequency == that.fielddataMinFrequency
                     && fielddataMaxFrequency == that.fielddataMaxFrequency
@@ -335,10 +336,10 @@ public class LangStringFieldMapper extends FieldMapper {
         }
 
         @Override
-        public void checkCompatibility(MappedFieldType other,
-                List<String> conflicts, boolean strict) {
+        public void checkCompatibility(final MappedFieldType other,
+                final List<String> conflicts, final boolean strict) {
             super.checkCompatibility(other, conflicts, strict);
-            LangStringFieldType otherType = (LangStringFieldType) other;
+            final LangStringFieldType otherType = (LangStringFieldType) other;
             if (strict) {
                 if (fielddata() != otherType.fielddata()) {
                     conflicts.add("mapper [" + name() + "] is used by multiple types. Set update_all_types to true to update [fielddata] "
@@ -363,7 +364,7 @@ public class LangStringFieldMapper extends FieldMapper {
             return fielddata;
         }
 
-        public void setFielddata(boolean fielddata) {
+        public void setFielddata(final boolean fielddata) {
             checkIfFrozen();
             this.fielddata = fielddata;
         }
@@ -372,7 +373,7 @@ public class LangStringFieldMapper extends FieldMapper {
             return fielddataMinFrequency;
         }
 
-        public void setFielddataMinFrequency(double fielddataMinFrequency) {
+        public void setFielddataMinFrequency(final double fielddataMinFrequency) {
             checkIfFrozen();
             this.fielddataMinFrequency = fielddataMinFrequency;
         }
@@ -381,7 +382,7 @@ public class LangStringFieldMapper extends FieldMapper {
             return fielddataMaxFrequency;
         }
 
-        public void setFielddataMaxFrequency(double fielddataMaxFrequency) {
+        public void setFielddataMaxFrequency(final double fielddataMaxFrequency) {
             checkIfFrozen();
             this.fielddataMaxFrequency = fielddataMaxFrequency;
         }
@@ -390,7 +391,7 @@ public class LangStringFieldMapper extends FieldMapper {
             return fielddataMinSegmentSize;
         }
 
-        public void setFielddataMinSegmentSize(int fielddataMinSegmentSize) {
+        public void setFielddataMinSegmentSize(final int fielddataMinSegmentSize) {
             checkIfFrozen();
             this.fielddataMinSegmentSize = fielddataMinSegmentSize;
         }
@@ -428,10 +429,10 @@ public class LangStringFieldMapper extends FieldMapper {
     private String langBaseName;
     private Method parseCopyMethod;
 
-    protected LangStringFieldMapper(String simpleName, MappedFieldType fieldType, MappedFieldType defaultFieldType,
-                                int positionIncrementGap, Boolean includeInAll,
-                                String fieldSeparator, String[] supportedLanguages, String langField, String langBaseName,
-                                Settings indexSettings, MultiFields multiFields, CopyTo copyTo) {
+    protected LangStringFieldMapper(final String simpleName, final MappedFieldType fieldType, final MappedFieldType defaultFieldType,
+                                final int positionIncrementGap, final Boolean includeInAll,
+                                final String fieldSeparator, final String[] supportedLanguages, final String langField, final String langBaseName,
+                                final Settings indexSettings, final MultiFields multiFields, final CopyTo copyTo) {
         super(simpleName, fieldType, defaultFieldType, indexSettings, multiFields, copyTo);
         assert fieldType.tokenized();
         assert fieldType.hasDocValues() == false;
@@ -447,17 +448,14 @@ public class LangStringFieldMapper extends FieldMapper {
 
         langDetectorFactory = LangDetectorFactory.create(supportedLanguages);
 
-        parseCopyMethod = AccessController.doPrivileged(new PrivilegedAction<Method>() {
-            @Override
-            public Method run() {
-                try {
-                    Class<?> docParserClazz = FieldMapper.class.getClassLoader().loadClass("org.elasticsearch.index.mapper.DocumentParser");
-                    Method method = docParserClazz.getDeclaredMethod("parseCopy", new Class[] { String.class, ParseContext.class });
-                    method.setAccessible(true);
-                    return method;
-                } catch (Exception e) {
-                    throw new IllegalStateException("Failed to access DocumentParser#parseCopy(String, ParseContext).", e);
-                }
+        parseCopyMethod = AccessController.doPrivileged((PrivilegedAction<Method>) () -> {
+            try {
+                final Class<?> docParserClazz = FieldMapper.class.getClassLoader().loadClass("org.elasticsearch.index.mapper.DocumentParser");
+                final Method method = docParserClazz.getDeclaredMethod("parseCopy", new Class[] { String.class, ParseContext.class });
+                method.setAccessible(true);
+                return method;
+            } catch (final Exception e) {
+                throw new IllegalStateException("Failed to access DocumentParser#parseCopy(String, ParseContext).", e);
             }
         });
     }
@@ -477,7 +475,7 @@ public class LangStringFieldMapper extends FieldMapper {
     }
 
     @Override
-    protected void parseCreateField(ParseContext context, List<IndexableField> fields) throws IOException {
+    protected void parseCreateField(final ParseContext context, final List<IndexableField> fields) throws IOException {
         final String value;
         if (context.externalValueSet()) {
             value = context.externalValue().toString();
@@ -494,7 +492,7 @@ public class LangStringFieldMapper extends FieldMapper {
         }
 
         if (fieldType().indexOptions() != IndexOptions.NONE || fieldType().stored()) {
-            Field field = new Field(fieldType().name(), value, fieldType());
+            final Field field = new Field(fieldType().name(), value, fieldType());
             fields.add(field);
         }
 
@@ -510,7 +508,7 @@ public class LangStringFieldMapper extends FieldMapper {
                 langFieldBuf.append(fieldSeparator).append(lang);
                 try {
                     parseCopyMethod.invoke(null, new Object[] { langFieldBuf.toString(), context });
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     throw new IllegalStateException(
                             "Failed to invoke parseCopy method.", e);
                 }
@@ -524,7 +522,7 @@ public class LangStringFieldMapper extends FieldMapper {
             final IndexableField[] langFields = context.doc()
                     .getFields(langField);
             if (langFields != null) {
-                for (IndexableField langField : langFields) {
+                for (final IndexableField langField : langFields) {
                     if (langField instanceof Field) {
                         final BytesRef bytes = langField.binaryValue();
                         if (bytes != null) {
@@ -545,7 +543,7 @@ public class LangStringFieldMapper extends FieldMapper {
             final LangDetector langDetector = langDetectorFactory.getLangDetector();
             langDetector.append(text);
             return langDetector.detect();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // TODO logger
             return LangDetector.UNKNOWN_LANG;
         }
@@ -557,7 +555,7 @@ public class LangStringFieldMapper extends FieldMapper {
     }
 
     @Override
-    protected void doMerge(Mapper mergeWith, boolean updateAllTypes) {
+    protected void doMerge(final Mapper mergeWith, final boolean updateAllTypes) {
         super.doMerge(mergeWith, updateAllTypes);
         this.includeInAll = ((LangStringFieldMapper) mergeWith).includeInAll;
         this.fieldSeparator = ((LangStringFieldMapper) mergeWith).fieldSeparator;
@@ -572,7 +570,7 @@ public class LangStringFieldMapper extends FieldMapper {
     }
 
     @Override
-    protected void doXContentBody(XContentBuilder builder, boolean includeDefaults, Params params) throws IOException {
+    protected void doXContentBody(final XContentBuilder builder, final boolean includeDefaults, final Params params) throws IOException {
         super.doXContentBody(builder, includeDefaults, params);
         doXContentAnalyzers(builder, includeDefaults);
 
@@ -610,7 +608,7 @@ public class LangStringFieldMapper extends FieldMapper {
         if (includeDefaults || !fieldSeparator.equals(FIELD_SEPARATOR)) {
             builder.field(SEPARATOR_SETTING_KEY, fieldSeparator);
         }
-        String langs = Strings.arrayToDelimitedString(supportedLanguages, ",");
+        final String langs = Strings.arrayToDelimitedString(supportedLanguages, ",");
         if (includeDefaults
                 || !langs.equals(Strings.arrayToDelimitedString(SUPPORTED_LANGUAGES, ","))) {
             builder.field(LANG_SETTING_KEY, langs);
