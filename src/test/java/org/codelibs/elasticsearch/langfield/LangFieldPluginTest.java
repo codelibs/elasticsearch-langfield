@@ -68,8 +68,7 @@ public class LangFieldPluginTest extends TestCase {
 
                     // id
                     .startObject("id")//
-                    .field("type", "string")//
-                    .field("index", "not_analyzed")//
+                    .field("type", "keyword")//
                     .endObject()//
 
                     // message
@@ -209,8 +208,7 @@ public class LangFieldPluginTest extends TestCase {
 
                     // id
                     .startObject("id")//
-                    .field("type", "string")//
-                    .field("index", "not_analyzed")//
+                    .field("type", "keyword")//
                     .endObject()//
 
                     // message
@@ -221,8 +219,7 @@ public class LangFieldPluginTest extends TestCase {
 
                     // lang
                     .startObject("lang")//
-                    .field("type", "string")//
-                    .field("index", "not_analyzed")//
+                    .field("type", "keyword")//
                     .endObject()//
 
                     .endObject()//
@@ -297,8 +294,7 @@ public class LangFieldPluginTest extends TestCase {
 
                     // id
                     .startObject("id")//
-                    .field("type", "string")//
-                    .field("index", "not_analyzed")//
+                    .field("type", "keyword")//
                     .endObject()//
 
                     // message
@@ -306,7 +302,7 @@ public class LangFieldPluginTest extends TestCase {
                     .field("type", "langstring")//
                     .field("lang_base_name", "content")//
                     .field("lang_field", "lang")//
-                    .field("index", "no")//
+                    .field("index", false)//
                     .endObject()//
 
                     // content
@@ -317,8 +313,7 @@ public class LangFieldPluginTest extends TestCase {
 
                     // lang
                     .startObject("lang")//
-                    .field("type", "string")//
-                    .field("index", "not_analyzed")//
+                    .field("type", "keyword")//
                     .endObject()//
 
                     .endObject()//
