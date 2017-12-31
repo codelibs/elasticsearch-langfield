@@ -33,7 +33,10 @@ import java.util.Objects;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.NormsFieldExistsQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.codelibs.elasticsearch.langfield.detect.LangDetector;
 import org.codelibs.elasticsearch.langfield.detect.LangDetectorFactory;
@@ -46,11 +49,13 @@ import org.elasticsearch.index.fielddata.IndexFieldData;
 import org.elasticsearch.index.fielddata.plain.PagedBytesIndexFieldData;
 import org.elasticsearch.index.mapper.DocumentMapperParser;
 import org.elasticsearch.index.mapper.FieldMapper;
+import org.elasticsearch.index.mapper.FieldNamesFieldMapper;
 import org.elasticsearch.index.mapper.MappedFieldType;
 import org.elasticsearch.index.mapper.Mapper;
 import org.elasticsearch.index.mapper.MapperParsingException;
 import org.elasticsearch.index.mapper.ParseContext;
 import org.elasticsearch.index.mapper.StringFieldType;
+import org.elasticsearch.index.query.QueryShardContext;
 
 /** A {@link FieldMapper} for full-text fields. */
 public class LangStringFieldMapper extends FieldMapper {
@@ -208,10 +213,10 @@ public class LangStringFieldMapper extends FieldMapper {
                     builder.positionIncrementGap(newPositionIncrementGap);
                     iterator.remove();
                 } else if (propName.equals("fielddata")) {
-                    builder.fielddata(XContentMapValues.nodeBooleanValue(propNode));
+                    builder.fielddata(XContentMapValues.nodeBooleanValue(propNode, "fielddata"));
                     iterator.remove();
                 } else if (propName.equals("eager_global_ordinals")) {
-                    builder.eagerGlobalOrdinals(XContentMapValues.nodeBooleanValue(propNode));
+                    builder.eagerGlobalOrdinals(XContentMapValues.nodeBooleanValue(propNode, "eager_global_ordinals"));
                     iterator.remove();
                 } else if (propName.equals("fielddata_frequency_filter")) {
                     final Map<?,?> frequencyFilter = (Map<?, ?>) propNode;
@@ -353,6 +358,15 @@ public class LangStringFieldMapper extends FieldMapper {
         }
 
         @Override
+        public Query existsQuery(QueryShardContext context) {
+            if (omitNorms()) {
+                return new TermQuery(new Term(FieldNamesFieldMapper.NAME, name()));
+            } else {
+                return new NormsFieldExistsQuery(name());
+            }
+        }
+
+        @Override
         public Query nullValueQuery() {
             if (nullValue() == null) {
                 return null;
@@ -361,11 +375,11 @@ public class LangStringFieldMapper extends FieldMapper {
         }
 
         @Override
-        public IndexFieldData.Builder fielddataBuilder() {
+        public IndexFieldData.Builder fielddataBuilder(String fullyQualifiedIndexName) {
             if (fielddata == false) {
                 throw new IllegalArgumentException("Fielddata is disabled on text fields by default. Set fielddata=true on [" + name()
                         + "] in order to load fielddata in memory by uninverting the inverted index. Note that this can however "
-                        + "use significant memory.");
+                        + "use significant memory. Alternatively use a keyword field instead.");
             }
             return new PagedBytesIndexFieldData.Builder(fielddataMinFrequency, fielddataMaxFrequency, fielddataMinSegmentSize);
         }
