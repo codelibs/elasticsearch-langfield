@@ -375,6 +375,11 @@ public class LangDetector {
         for (final double element : prob) {
             sump += element;
         }
+
+        if(sump == 0) {
+            return 0;
+        }
+
         for (int i = 0; i < prob.length; ++i) {
             final double p = prob[i] / sump;
             if (maxp < p) {
